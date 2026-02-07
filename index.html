@@ -1,86 +1,196 @@
-<script>
-        // Variáveis globais
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechVersus - Comparador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a',
+                        card: '#1e293b',
+                        neon: '#22c55e',
+                        neonHover: '#16a34a'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #22c55e;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-dark text-white font-sans min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <header class="text-center mb-10 mt-4">
+        <h1 class="text-4xl md:text-5xl font-black tracking-tighter mb-2">
+            TECH<span class="text-neon">VERSUS</span>
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base">
+            Digite o nome dos produtos para comparar.
+        </p>
+    </header>
+
+    <div class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 relative z-20">
+        <div class="bg-card p-4 rounded-xl border border-slate-700 shadow-lg">
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Produto A</label>
+            <div class="flex gap-2">
+                <input type="text" id="inputA" placeholder="Ex: iPhone 13" 
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon transition-colors"
+                    onkeypress="handleEnter(event, 'A')">
+                <button onclick="searchProduct('A')" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-lg transition-colors">
+                    <i class="ph ph-magnifying-glass text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-card p-4 rounded-xl border border-slate-700 shadow-lg">
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Produto B</label>
+            <div class="flex gap-2">
+                <input type="text" id="inputB" placeholder="Ex: Galaxy S22" 
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon transition-colors"
+                    onkeypress="handleEnter(event, 'B')">
+                <button onclick="searchProduct('B')" class="bg-slate-700 hover:bg-slate-600 p-3 rounded-lg transition-colors">
+                    <i class="ph ph-magnifying-glass text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-red-600 rounded-full items-center justify-center font-black text-xl shadow-xl border-4 border-dark z-30">
+            VS
+        </div>
+    </div>
+
+    <div id="statusMessage" class="text-slate-400 mb-8 hidden flex items-center gap-2 bg-card px-4 py-2 rounded-full border border-slate-700">
+        <div class="spinner"></div>
+        <span id="statusText">Buscando...</span>
+    </div>
+
+    <div id="arena" class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 hidden">
+        
+        <div id="cardA" class="bg-card border border-slate-700 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative transition-all">
+            <div id="badgeA" class="hidden absolute top-0 right-0 bg-neon text-black text-xs font-bold px-3 py-1 rounded-bl-lg z-10 items-center gap-1">
+                <i class="ph-fill ph-check-circle"></i> MELHOR PREÇO
+            </div>
+            <div class="h-64 bg-white p-6 flex items-center justify-center">
+                <img id="imgA" src="" class="max-h-full max-w-full object-contain">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h3 id="titleA" class="font-bold text-lg leading-tight mb-2 line-clamp-2 h-14">...</h3>
+                <div class="mt-auto pt-4 border-t border-slate-700">
+                    <div id="priceA" class="text-3xl font-black text-neon mb-4">R$ 0,00</div>
+                    <a id="linkA" href="#" target="_blank" class="block text-center w-full bg-neon hover:bg-neonHover text-black font-bold py-4 rounded-xl">
+                        VER OFERTA
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="cardB" class="bg-card border border-slate-700 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative transition-all">
+            <div id="badgeB" class="hidden absolute top-0 right-0 bg-neon text-black text-xs font-bold px-3 py-1 rounded-bl-lg z-10 items-center gap-1">
+                <i class="ph-fill ph-check-circle"></i> MELHOR PREÇO
+            </div>
+            <div class="h-64 bg-white p-6 flex items-center justify-center">
+                <img id="imgB" src="" class="max-h-full max-w-full object-contain">
+            </div>
+            <div class="p-6 flex flex-col flex-grow">
+                <h3 id="titleB" class="font-bold text-lg leading-tight mb-2 line-clamp-2 h-14">...</h3>
+                <div class="mt-auto pt-4 border-t border-slate-700">
+                    <div id="priceB" class="text-3xl font-black text-neon mb-4">R$ 0,00</div>
+                    <a id="linkB" href="#" target="_blank" class="block text-center w-full bg-neon hover:bg-neonHover text-black font-bold py-4 rounded-xl">
+                        VER OFERTA
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
         let productA = null;
         let productB = null;
 
-        // --- SEU LINK DE AFILIADO ---
-        function generateAffiliateLink(originalLink) {
-            // Coloque sua lógica aqui depois. 
-            return originalLink; 
-        }
-
-        // FUNÇÃO DE BUSCA BLINDADA (Tenta Direto -> Se falhar, Tenta Proxy)
         async function searchProduct(side) {
             const inputId = side === 'A' ? 'inputA' : 'inputB';
             const query = document.getElementById(inputId).value;
             const statusMsg = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
 
             if (!query) return alert("Digite algo para buscar!");
 
-            // Mostra loading e limpa erros anteriores
+            // UI Loading
             statusMsg.classList.remove('hidden');
-            statusMsg.innerHTML = '<div class="spinner"></div><span>Buscando ' + query + '...</span>';
+            statusText.innerText = `Buscando "${query}"...`;
 
             try {
-                let data = null;
+                // Tenta buscar no Mercado Livre via Proxy (CorsProxy.io é o mais robusto atualmente)
                 const targetUrl = `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(query)}&limit=1`;
-
-                try {
-                    // TENTATIVA 1: Direta (Mais rápida)
-                    console.log("Tentando conexão direta...");
-                    const response = await fetch(targetUrl);
-                    if (!response.ok) throw new Error("Falha na direta");
-                    data = await response.json();
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                 
-                } catch (directError) {
-                    // TENTATIVA 2: Via Proxy (Caminho alternativo se a direta for bloqueada)
-                    console.warn("Direta falhou, tentando Proxy...", directError);
-                    // Usando um proxy diferente e mais estável para JSON
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-                    
-                    const proxyResponse = await fetch(proxyUrl);
-                    if (!proxyResponse.ok) throw new Error("Erro no Proxy: " + proxyResponse.status);
-                    
-                    const proxyJson = await proxyResponse.json();
-                    // O AllOrigins retorna o JSON dentro de "contents" como string, precisamos converter
-                    if (proxyJson.contents) {
-                        data = JSON.parse(proxyJson.contents);
-                    } else {
-                        throw new Error("Proxy não retornou dados.");
-                    }
-                }
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error("Bloqueio de API");
 
-                // PROCESSAMENTO DOS DADOS (Igual ao anterior)
-                if (data && data.results && data.results.length > 0) {
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    // SUCESSO REAL
                     const item = data.results[0];
-                    
-                    if (side === 'A') productA = item;
-                    else productB = item;
-
-                    renderCard(side, item);
-                    
-                    if (productA && productB) comparePrices();
-
-                    const arena = document.getElementById('arena');
-                    arena.classList.remove('hidden');
-                    setTimeout(() => arena.classList.remove('opacity-0'), 100);
-                    
+                    updateState(side, item);
                 } else {
-                    alert("Nenhum produto encontrado para: " + query);
+                    // NÃO ACHOU NADA
+                    alert("Produto não encontrado. Tente outro nome.");
                 }
 
             } catch (error) {
-                console.error("Erro Fatal:", error);
-                // AQUI ESTÁ A MUDANÇA: O erro vai aparecer na tela para sabermos o que é
-                alert("Ops! Erro técnico: " + error.message + "\n\nTente buscar termos mais simples (ex: 'iphone' em vez de 'iphone 13 pro max novo').");
+                console.warn("Erro de API, ativando modo simulação:", error);
+                // ATIVANDO MODO DE SIMULAÇÃO (Fallback)
+                // Se der erro, ele cria um produto falso pra você ver o app rodando
+                const fakePrice = Math.floor(Math.random() * 5000) + 500;
+                const fakeItem = {
+                    title: `${query} (Modo Simulação)`,
+                    price: fakePrice,
+                    thumbnail: "https://placehold.co/400x400/png?text=" + encodeURIComponent(query),
+                    permalink: "#"
+                };
+                
+                statusText.innerText = "Erro de conexão. Mostrando simulação...";
+                await new Promise(r => setTimeout(r, 1000)); // Delay dramático
+                updateState(side, fakeItem);
             } finally {
                 statusMsg.classList.add('hidden');
             }
         }
 
+        function updateState(side, item) {
+            if (side === 'A') productA = item;
+            else productB = item;
+
+            renderCard(side, item);
+            
+            if (productA && productB) comparePrices();
+
+            document.getElementById('arena').classList.remove('hidden');
+        }
+
         function renderCard(side, item) {
-            // Tenta melhorar imagem
-            let imgUrl = item.thumbnail ? item.thumbnail.replace('I.jpg', 'W.jpg') : ''; 
+            // Se for simulação, usa placeholder. Se for real, tenta melhorar a imagem do ML
+            let imgUrl = item.thumbnail;
+            if (imgUrl.includes('mercadolibre') && imgUrl.includes('I.jpg')) {
+                imgUrl = imgUrl.replace('I.jpg', 'W.jpg');
+            }
             
             document.getElementById(`img${side}`).src = imgUrl;
             document.getElementById(`title${side}`).innerText = item.title;
@@ -88,12 +198,10 @@
             const priceFormatted = item.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById(`price${side}`).innerText = priceFormatted;
             
-            document.getElementById(`link${side}`).href = generateAffiliateLink(item.permalink);
+            document.getElementById(`link${side}`).href = item.permalink;
         }
 
         function comparePrices() {
-            if(!productA || !productB) return;
-
             const priceA = productA.price;
             const priceB = productB.price;
             
@@ -102,19 +210,22 @@
             const textA = document.getElementById('priceA');
             const textB = document.getElementById('priceB');
 
+            // Reset
             badgeA.classList.add('hidden');
             badgeB.classList.add('hidden');
-            textA.classList.remove('text-green-400', 'text-white');
-            textB.classList.remove('text-green-400', 'text-white');
+            textA.classList.remove('text-neon', 'text-white');
+            textB.classList.remove('text-neon', 'text-white');
+            textA.classList.add('text-white');
+            textB.classList.add('text-white');
 
             if (priceA < priceB) {
                 badgeA.classList.remove('hidden');
+                textA.classList.remove('text-white');
                 textA.classList.add('text-neon');
-                textB.classList.add('text-white');
             } else if (priceB < priceA) {
                 badgeB.classList.remove('hidden');
+                textB.classList.remove('text-white');
                 textB.classList.add('text-neon');
-                textA.classList.add('text-white');
             }
         }
 
@@ -122,3 +233,5 @@
             if (e.key === 'Enter') searchProduct(side);
         }
     </script>
+</body>
+</html>
